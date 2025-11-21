@@ -1,24 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Django TODO App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        h1 { color: #333; }
-        ul { list-style-type: none; padding: 0; }
-        li { background: #f9f9f9; margin: 10px 0; padding: 10px; border: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .completed { text-decoration: line-through; color: #888; }
-        a { text-decoration: none; color: #007bff; }
-        button { background: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; }
-        .btn-primary { background: #007bff; color: white; padding: 10px 20px; display: inline-block; margin-bottom: 20px; }
-        .actions a { margin-left: 10px; }
+        :root {
+            --bg-color: #121212;
+            --card-bg: rgba(30, 30, 30, 0.6);
+            --text-color: #e0e0e0;
+            --accent-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --danger-color: #cf6679;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(45deg, #121212, #1e1e1e);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 50px;
+            padding: 20px;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: var(--glass-border);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid transparent;
+        }
+
+        li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #666;
+            opacity: 0.7;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--accent-color);
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        button,
+        .btn-primary {
+            background: linear-gradient(90deg, var(--accent-color), #9b59b6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.1s, filter 0.2s;
+            text-align: center;
+            display: inline-block;
+        }
+
+        button:hover,
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions a {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .actions a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Form Styles */
+        input[type="text"],
+        textarea,
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .stats {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
     </style>
 </head>
+
 <body>
-    <h1>Django TODO App</h1>
-    {% block content %}
-    {% endblock %}
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script>
+        // Global confetti function
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    </script>
 </body>
+
 </html>

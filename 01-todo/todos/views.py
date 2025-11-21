@@ -23,8 +23,14 @@ class TodoDeleteView(DeleteView):
     model = Todo
     success_url = reverse_lazy('todo_list')
 
+from django.http import JsonResponse
+
 def complete_todo(request, pk):
     todo = get_object_or_404(Todo, pk=pk)
     todo.completed = True
     todo.save()
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'success'})
+        
     return redirect('todo_list')

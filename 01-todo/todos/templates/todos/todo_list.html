@@ -1,26 +1,92 @@
 {% extends 'todos/base.html' %}
 
 {% block content %}
-<a href="{% url 'todo_create' %}" class="btn-primary">Add New TODO</a>
-<ul>
-    {% for todo in todos %}
-    <li>
-        <span class="{% if todo.completed %}completed{% endif %}">
-            <strong>{{ todo.title }}</strong>
-            {% if todo.due_date %}
-            <small>(Due: {{ todo.due_date|date:"M d, Y" }})</small>
-            {% endif %}
-        </span>
-        <div class="actions">
-            {% if not todo.completed %}
-            <a href="{% url 'todo_complete' todo.pk %}">Complete</a>
-            {% endif %}
-            <a href="{% url 'todo_update' todo.pk %}">Edit</a>
-            <a href="{% url 'todo_delete' todo.pk %}">Delete</a>
-        </div>
-    </li>
-    {% empty %}
-    <li>No TODOs yet.</li>
-    {% endfor %}
-</ul>
+<h1>My Tasks</h1>
+
+<div class="stats">
+    <span id="completed-count">{{ completed_count }}</span> / <span id="total-count">{{ total_count }}</span> Completed
+</div>
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+</div>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{% url 'todo_create' %}" class="btn-primary">+ Add New Task</a>
+</div>
+
+<div class="card">
+    <ul id="todo-list">
+        {% for todo in todos %}
+        <li id="todo-{{ todo.pk }}">
+            <span class="{% if todo.completed %}completed{% endif %}">
+                <strong>{{ todo.title }}</strong>
+                {% if todo.due_date %}
+                <br><small style="color: #888; font-size: 0.8em;">Due: {{ todo.due_date|date:"M d, Y" }}</small>
+                {% endif %}
+            </span>
+            <div class="actions">
+                {% if not todo.completed %}
+                <button onclick="completeTodo({{ todo.pk }})" class="btn-primary"
+                    style="padding: 5px 10px; font-size: 0.8em;">✓</button>
+                {% endif %}
+                <a href="{% url 'todo_update' todo.pk %}">Edit</a>
+                <a href="{% url 'todo_delete' todo.pk %}" style="color: var(--danger-color);">✕</a>
+            </div>
+        </li>
+        {% empty %}
+        <li style="text-align: center; display: block; color: #888;">
+            No tasks yet. Start by adding one! 🚀
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    // Calculate initial progress
+    function updateProgress() {
+        const total = document.querySelectorAll('#todo-list li').length;
+        // Filter out the "No tasks yet" item if it exists
+        const emptyMsg = document.querySelector('#todo-list li').textContent.includes("No tasks yet");
+        const realTotal = emptyMsg ? 0 : total;
+
+        const completed = document.querySelectorAll('.completed').length;
+
+        const percent = realTotal === 0 ? 0 : (completed / realTotal) * 100;
+        document.getElementById('progress-bar').style.width = percent + '%';
+        document.getElementById('completed-count').innerText = completed;
+        document.getElementById('total-count').innerText = realTotal;
+
+        if (percent === 100 && realTotal > 0) {
+            triggerConfetti();
+        }
+    }
+
+    function completeTodo(id) {
+        fetch(`/complete/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    triggerConfetti();
+                    // Animate and update UI
+                    const row = document.getElementById(`todo-${id}`);
+                    const span = row.querySelector('span');
+                    span.classList.add('completed');
+
+                    // Remove the check button
+                    const btn = row.querySelector('button');
+                    if (btn) btn.remove();
+
+                    updateProgress();
+                }
+            });
+    }
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', updateProgress);
+</script>
 {% endblock %}
