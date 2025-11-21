@@ -1,11 +1,30 @@
 {% extends 'todos/base.html' %}
 
 {% block content %}
-<h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} TODO</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn-primary">Save</button>
-    <a href="{% url 'todo_list' %}">Cancel</a>
-</form>
+<div class="card">
+    <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Task</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 20px;">
+            <label for="id_title" style="display: block; margin-bottom: 8px; color: #aaa;">Title</label>
+            {{ form.title }}
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label for="id_description" style="display: block; margin-bottom: 8px; color: #aaa;">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <label for="id_due_date" style="display: block; margin-bottom: 8px; color: #aaa;">Due Date</label>
+            {{ form.due_date }}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'todo_list' %}" style="color: #888; transition: color 0.2s;">Cancel</a>
+            <button type="submit" class="btn-primary">Save Task</button>
+        </div>
+    </form>
+</div>
 {% endblock %}
